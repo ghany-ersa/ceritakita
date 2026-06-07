@@ -35,7 +35,6 @@ const {
   currentDare, sessionFinished, triggerDare, completeDare, nextCard,
 } = session
 
-// ── Swipe ─────────────────────────────────────────────────────────────
 const swipe = useSwipeCard({
   onSwipeRight: () => nextCard(),
   onSwipeLeft:  () => triggerDare(),
@@ -45,23 +44,22 @@ const {
   cardStyle, showAnswerHint, showDareHint,
   isDragging, isFlying,
   onPointerDown, onPointerMove, onPointerUp,
+  triggerSwipe,
 } = swipe
 
-// cardKey hanya naik saat card baru benar-benar perlu di-mount
-// — dipicu setelah fly-out selesai (nextCard() sudah dipanggil)
-const cardKey      = ref(0)
-const cardVisible  = ref(true)  // kontrol masuk/keluar kartu baru
+const cardKey     = ref(0)
+const cardVisible = ref(true)
 
 watch(currentCard, () => {
-  // Saat currentCard berubah (dipicu oleh nextCard/completeDare),
-  // isFlying masih true. Kita mount kartu baru setelah reset (50ms setelah 380ms).
-  // Beri jeda kecil supaya kartu lama sudah invisible sebelum baru masuk.
   cardVisible.value = false
   setTimeout(() => {
     cardKey.value++
     cardVisible.value = true
   }, 30)
 })
+
+function handleAnswer() { triggerSwipe(1) }
+function handleDare()   { triggerSwipe(-1) }
 </script>
 
 <template>
@@ -91,27 +89,44 @@ watch(currentCard, () => {
 
       <!-- ── KARTU AKTIF ── -->
       <template v-else>
-        <div class="card-zone">
-          <Transition name="card-in">
-            <SessionCard
-              v-if="cardVisible"
-              :key="cardKey"
-              :question="currentCard?.question"
-              :label="theme?.label"
-              :card-style="cardStyle"
-              :is-dragging="isDragging"
-              :is-flying="isFlying"
-              :show-answer-hint="showAnswerHint"
-              :show-dare-hint="showDareHint"
-              @pointerdown="onPointerDown"
-              @pointermove="onPointerMove"
-              @pointerup="onPointerUp"
-            />
-          </Transition>
+        <div class="card-stage">
+
+          <!-- Desktop: tombol Dare di kiri kartu -->
+          <button class="side-btn side-btn--dare desktop-only" @click="handleDare">
+            <span class="material-symbols-outlined side-btn__icon" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
+            <span class="side-btn__label">Dare!</span>
+          </button>
+
+          <!-- Kartu -->
+          <div class="card-zone">
+            <Transition name="card-in">
+              <SessionCard
+                v-if="cardVisible"
+                :key="cardKey"
+                :question="currentCard?.question"
+                :label="theme?.label"
+                :card-style="cardStyle"
+                :is-dragging="isDragging"
+                :is-flying="isFlying"
+                :show-answer-hint="showAnswerHint"
+                :show-dare-hint="showDareHint"
+                @pointerdown="onPointerDown"
+                @pointermove="onPointerMove"
+                @pointerup="onPointerUp"
+              />
+            </Transition>
+          </div>
+
+          <!-- Desktop: tombol Jawab di kanan kartu -->
+          <button class="side-btn side-btn--answer desktop-only" @click="handleAnswer">
+            <span class="material-symbols-outlined side-btn__icon" style="font-variation-settings:'FILL' 1;">check_circle</span>
+            <span class="side-btn__label">Jawab</span>
+          </button>
+
         </div>
 
-        <!-- Gesture hint — permanent, soft -->
-        <div class="gesture-hint">
+        <!-- Mobile gesture hint -->
+        <div class="gesture-hint mobile-only">
           <span class="gesture-hint__item">
             <span class="material-symbols-outlined" style="font-size:14px;">arrow_back</span>
             Dare
@@ -123,9 +138,9 @@ watch(currentCard, () => {
           </span>
         </div>
       </template>
+
     </main>
 
-    <!-- Dare modal -->
     <Transition name="dare-slide">
       <DareCard v-if="showDare" :dare="currentDare" @done="completeDare" />
     </Transition>
@@ -152,18 +167,85 @@ watch(currentCard, () => {
   z-index: 1;
 }
 
-/* ── Card zone ── */
-.card-zone {
+/* ── Card stage: kartu + side buttons ── */
+.card-stage {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 20px;
   padding: 16px 0 8px;
-  /* overflow hidden agar kartu terbang tidak bikin scrollbar */
   overflow: hidden;
 }
 
-/* Kartu baru masuk dari bawah, sedikit kecil & miring */
+.card-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Side buttons (desktop only) ── */
+.desktop-only { display: none; }
+
+@media (min-width: 760px) {
+  .desktop-only { display: flex; }
+  .mobile-only  { display: none !important; }
+}
+
+.side-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.18s ease,
+              background 0.15s ease;
+}
+
+.side-btn:hover  { transform: scale(1.08); }
+.side-btn:active { transform: scale(0.94); }
+
+.side-btn--answer {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 6px 24px -4px rgba(143, 52, 37, 0.35);
+}
+.side-btn--answer:hover {
+  background: var(--surface-tint);
+  box-shadow: 0 10px 32px -4px rgba(143, 52, 37, 0.45);
+}
+
+.side-btn--dare {
+  background: var(--surface-container);
+  color: var(--on-surface-variant);
+  border: 1.5px solid rgba(137, 114, 109, 0.25);
+  box-shadow: var(--shadow-sm);
+}
+.side-btn--dare:hover {
+  background: var(--surface-container-high);
+  box-shadow: var(--shadow-md);
+}
+
+.side-btn__icon { font-size: 28px; }
+
+.side-btn__label {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── Card enter animation ── */
 .card-in-enter-active {
   animation: cardEnter 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -178,7 +260,7 @@ watch(currentCard, () => {
   }
 }
 
-/* ── Gesture hint ── */
+/* ── Mobile gesture hint ── */
 .gesture-hint {
   flex-shrink: 0;
   display: flex;
@@ -217,7 +299,7 @@ watch(currentCard, () => {
   padding: 24px 0;
 }
 
-/* ── Dare slide-up transition ── */
+/* ── Dare slide-up ── */
 .dare-slide-enter-active {
   animation: dareSlideIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
