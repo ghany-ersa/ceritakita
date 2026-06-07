@@ -7,25 +7,40 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'favicon-32x32.png', 'favicon-16x16.png', 'apple-touch-icon.png', 'og-image.svg'],
       manifest: {
-        name: 'CeritaKita',
+        name: 'CeritaKita — Kartu Percakapan untuk Pasangan',
         short_name: 'CeritaKita',
-        description: 'Kartu percakapan untuk pasangan',
-        theme_color: '#1a1a2e',
-        background_color: '#1a1a2e',
+        description: 'Perdalam percakapan bersama pasanganmu dengan kartu pertanyaan digital. Pilih tema, jawab bersama, atau terima tantangan dare.',
+        theme_color: '#8f3425',
+        background_color: '#fcf9f3',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        lang: 'id',
+        categories: ['lifestyle', 'entertainment'],
         icons: [
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}']
       }
     })
   ]
