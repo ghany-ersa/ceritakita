@@ -15,10 +15,15 @@ import DareCard from '../components/organisms/DareCard.vue'
 const route   = useRoute()
 const router  = useRouter()
 const themeId = route.params.themeId
+const mood    = route.query.mood ?? 'semua'
 
 const allCards = computed(() => {
-  if (themeId === 'mix') return themes.flatMap(t => t.cards)
-  return getThemeById(themeId)?.cards ?? []
+  const cards = themeId === 'mix'
+    ? themes.flatMap(t => t.cards)
+    : getThemeById(themeId)?.cards ?? []
+
+  if (mood === 'semua') return cards
+  return cards.filter(c => c.mood === mood)
 })
 
 const theme = computed(() => {
@@ -29,10 +34,11 @@ const theme = computed(() => {
 
 if (allCards.value.length === 0) router.replace('/themes')
 
-const session = useCardSession(themeId, allCards.value)
+const session = useCardSession(themeId, mood, allCards.value)
 const {
   currentCard, progress, showDare,
-  currentDare, sessionFinished, triggerDare, completeDare, nextCard,
+  currentDare, dareTimeLeft, dareDone, sessionFinished,
+  triggerDare, tickDare, completeDare, nextCard, DARE_DURATION,
 } = session
 
 const swipe = useSwipeCard({
@@ -50,7 +56,13 @@ const {
 const cardKey     = ref(0)
 const cardVisible = ref(true)
 
+// skip trigger pertama saat mount — currentCard sudah sesuai, tidak perlu animasi masuk
+const cardWatchReady = ref(false)
 watch(currentCard, () => {
+  if (!cardWatchReady.value) {
+    cardWatchReady.value = true
+    return
+  }
   cardVisible.value = false
   setTimeout(() => {
     cardKey.value++
@@ -60,6 +72,7 @@ watch(currentCard, () => {
 
 function handleAnswer() { triggerSwipe(1) }
 function handleDare()   { triggerSwipe(-1) }
+function handleDareTick() { tickDare() }
 </script>
 
 <template>
@@ -142,7 +155,15 @@ function handleDare()   { triggerSwipe(-1) }
     </main>
 
     <Transition name="dare-slide">
-      <DareCard v-if="showDare" :dare="currentDare" @done="completeDare" />
+      <DareCard
+        v-if="showDare"
+        :dare="currentDare"
+        :time-left="dareTimeLeft"
+        :timer-done="dareDone"
+        :total-duration="DARE_DURATION"
+        @tick="handleDareTick"
+        @done="completeDare"
+      />
     </Transition>
   </div>
 </template>

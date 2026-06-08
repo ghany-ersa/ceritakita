@@ -1,6 +1,6 @@
 <template>
   <!-- Backdrop -->
-  <div class="dare-backdrop" @click.self="timerDone && $emit('done')">
+  <div class="dare-backdrop" @click.self="timerDone && emit('done')">
 
     <!-- Sheet -->
     <div class="dare-sheet">
@@ -24,7 +24,7 @@
           :class="{ 'dare-sheet__close--active': timerDone }"
           :disabled="!timerDone"
           aria-label="Selesai"
-          @click="$emit('done')"
+          @click="emit('done')"
         >
           <span class="material-symbols-outlined" style="font-size:18px;">close</span>
         </button>
@@ -53,7 +53,7 @@
         <button
           class="dare-sheet__cta"
           :disabled="!timerDone"
-          @click="$emit('done')"
+          @click="emit('done')"
         >
           <span>{{ timerDone ? 'Sudah Dilakukan' : `Tunggu ${timeLeft} detik...` }}</span>
           <span
@@ -69,35 +69,31 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 
-defineProps({
-  dare: { type: String, required: true },
+const props = defineProps({
+  dare:          { type: String,  required: true },
+  timeLeft:      { type: Number,  required: true },
+  timerDone:     { type: Boolean, required: true },
+  totalDuration: { type: Number,  default: 30 },
 })
 
-defineEmits(['done'])
+const emit = defineEmits(['tick', 'done'])
 
-const TIMER     = 30
-const CIRCUMFERENCE = 2 * Math.PI * 18   // r=18
+const CIRCUMFERENCE = 2 * Math.PI * 18
 
-const timeLeft  = ref(TIMER)
-const timerDone = ref(false)
-let interval    = null
+let interval = null
 
 onMounted(() => {
-  interval = setInterval(() => {
-    if (timeLeft.value > 0) {
-      timeLeft.value--
-    } else {
-      timerDone.value = true
-      clearInterval(interval)
-    }
-  }, 1000)
+  if (!props.timerDone) {
+    interval = setInterval(() => emit('tick'), 1000)
+  }
 })
+
 onUnmounted(() => clearInterval(interval))
 
 const dashOffset = computed(() => {
-  const progress = timeLeft.value / TIMER
+  const progress = props.timeLeft / props.totalDuration
   return CIRCUMFERENCE * (1 - progress)
 })
 </script>

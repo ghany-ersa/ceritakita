@@ -12,7 +12,7 @@ const { hasAccess } = usePurchase()
 
 function selectTheme(theme) {
   if (hasAccess(theme.id, theme.isFree)) {
-    router.push(`/session/${theme.id}`)
+    router.push(`/mood/${theme.id}`)
   } else {
     router.push(`/paywall/${theme.id}`)
   }
@@ -35,7 +35,7 @@ function selectTheme(theme) {
           <p class="page-subtitle">Pilih tema obrolan untuk malam ini.</p>
         </div>
 
-        <button class="mix-btn" @click="router.push('/session/mix')">
+        <button class="mix-btn" @click="router.push('/mood/mix')">
           <GrainTexture :opacity="0.04" />
           <div class="mix-btn__icon-wrap">
             <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">casino</span>
