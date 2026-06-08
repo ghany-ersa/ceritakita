@@ -6,6 +6,7 @@ import { useCardSession } from '../composables/useCardSession'
 import { useSwipeCard } from '../composables/useSwipeCard'
 import { usePurchase } from '../composables/usePurchase'
 import { useFeedback } from '../composables/useFeedback'
+import { useBreakpoint } from '../composables/useBreakpoint'
 import AmbientBackground from '../components/organisms/AmbientBackground.vue'
 import PageHeader from '../components/molecules/PageHeader.vue'
 import IconButton from '../components/atoms/IconButton.vue'
@@ -118,6 +119,8 @@ const {
 const cardKey = ref(0)
 const cardVisible = ref(true)
 
+const { isLargeScreen } = useBreakpoint()
+
 // Catat kartu yang sedang ditampilkan saat pertama kali muncul
 onMounted(() => recordShownCard(currentCard.value))
 watch(cardKey, () => recordShownCard(currentCard.value))
@@ -133,8 +136,24 @@ function animateNextCard(callback) {
   }, 30)
 }
 
-function handleAnswer() { triggerSwipe(-1) }
-function handleDare() { triggerSwipe(1) }
+function handleAnswer() {
+  if (isLargeScreen.value) {
+    animateNextCard(() => {
+      nextCard()
+      if (!sessionFinished.value) checkFeedback(false)
+    })
+  } else {
+    triggerSwipe(-1)
+  }
+}
+
+function handleDare() {
+  if (isLargeScreen.value) {
+    animateNextCard(() => triggerDare())
+  } else {
+    triggerSwipe(1)
+  }
+}
 function handleDareTick() { tickDare() }
 
 function handleCompleteDare() {
