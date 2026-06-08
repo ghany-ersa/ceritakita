@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getThemeById, themes } from '../data/themes'
+import { getThemeById, themes, getCardsForMix } from '../data/themes'
 import { useCardSession } from '../composables/useCardSession'
 import { useSwipeCard } from '../composables/useSwipeCard'
 import { usePurchase } from '../composables/usePurchase'
@@ -19,20 +19,29 @@ const route   = useRoute()
 const router  = useRouter()
 const themeId = route.params.themeId
 const mood    = route.query.mood ?? 'semua'
+const isMix   = themeId === 'mix'
+
+// Untuk mode mix, baca tema yang dipilih dari query param; fallback ke semua tema
+const selectedThemeIds = computed(() => {
+  if (!isMix) return []
+  const raw = route.query.themes
+  if (raw) return raw.split(',').filter(Boolean)
+  return themes.map(t => t.id)
+})
 
 const allCards = computed(() => {
-  const cards = themeId === 'mix'
-    ? themes.flatMap(t => t.cards)
-    : getThemeById(themeId)?.cards ?? []
+  const cards = isMix
+    ? getCardsForMix(selectedThemeIds.value)
+    : (getThemeById(themeId)?.cards ?? []).map(c => ({ ...c, themeName: getThemeById(themeId)?.name }))
 
   if (mood === 'semua') return cards
   return cards.filter(c => c.mood === mood)
 })
 
 const theme = computed(() => {
-  if (themeId === 'mix') return { name: 'Campur Semua Tema', label: 'Campuran' }
+  if (isMix) return { name: 'Campur Semua Tema' }
   const t = getThemeById(themeId)
-  return t ? { name: t.name, label: t.name } : null
+  return t ? { name: t.name } : null
 })
 
 if (allCards.value.length === 0) router.replace('/themes')
@@ -178,7 +187,7 @@ function handleCompleteDare() {
                 v-if="cardVisible"
                 :key="cardKey"
                 :question="currentCard?.question"
-                :label="theme?.label"
+                :label="currentCard?.themeName ?? theme?.name ?? ''"
                 :card-style="cardStyle"
                 :is-dragging="isDragging"
                 :is-flying="isFlying"

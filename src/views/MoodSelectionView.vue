@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getThemeById } from '../data/themes'
+import { getThemeById, themes } from '../data/themes'
 import { usePurchase } from '../composables/usePurchase'
 import AmbientBackground from '../components/organisms/AmbientBackground.vue'
 import PageHeader from '../components/molecules/PageHeader.vue'
@@ -11,9 +11,10 @@ import GrainTexture from '../components/atoms/GrainTexture.vue'
 const route   = useRoute()
 const router  = useRouter()
 const themeId = route.params.themeId
+const isMix   = themeId === 'mix'
 
 const theme = computed(() => {
-  if (themeId === 'mix') return { name: 'Campur Semua Tema' }
+  if (isMix) return { name: 'Campur Semua Tema' }
   return getThemeById(themeId)
 })
 
@@ -21,8 +22,21 @@ const { hasAccess } = usePurchase()
 
 if (!theme.value) router.replace('/themes')
 
+// Filter tema untuk mode mix — default semua tema dipilih
+const selectedThemes = ref(new Set(themes.map(t => t.id)))
+
+function toggleTheme(id) {
+  // Minimal 1 tema harus tetap dipilih
+  if (selectedThemes.value.has(id) && selectedThemes.value.size === 1) return
+  const next = new Set(selectedThemes.value)
+  next.has(id) ? next.delete(id) : next.add(id)
+  selectedThemes.value = next
+}
+
 function startSession(mood) {
-  router.push({ path: `/session/${themeId}`, query: { mood } })
+  const query = { mood }
+  if (isMix) query.themes = [...selectedThemes.value].join(',')
+  router.push({ path: `/session/${themeId}`, query })
 }
 </script>
 
@@ -43,6 +57,26 @@ function startSession(mood) {
           <p class="mood-theme-label">{{ theme?.name }}</p>
           <h2 class="mood-title">Malam ini terasa seperti apa?</h2>
           <p class="mood-subtitle">Pilih suasana yang paling cocok sekarang.</p>
+        </div>
+
+        <!-- Filter tema — hanya tampil saat mode mix -->
+        <div v-if="isMix" class="theme-filter">
+          <p class="theme-filter__label">Tema yang diikutkan</p>
+          <div class="theme-filter__chips">
+            <button
+              v-for="t in themes"
+              :key="t.id"
+              class="theme-chip"
+              :class="{ 'theme-chip--active': selectedThemes.has(t.id) }"
+              @click="toggleTheme(t.id)"
+            >
+              <span
+                class="material-symbols-outlined theme-chip__icon"
+                style="font-size:14px;font-variation-settings:'FILL' 1;"
+              >{{ selectedThemes.has(t.id) ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              {{ t.name }}
+            </button>
+          </div>
         </div>
 
         <div class="mood-options">
@@ -243,6 +277,59 @@ function startSession(mood) {
 .mood-card--santai  .mood-card__arrow,
 .mood-card--campur  .mood-card__arrow { color: var(--on-surface-variant); }
 .mood-card--dalam   .mood-card__arrow { color: var(--on-primary); }
+
+/* Theme filter */
+.theme-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.theme-filter__label {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+  opacity: 0.6;
+}
+
+.theme-filter__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid rgba(137, 114, 109, 0.2);
+  background: var(--surface-container-low);
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-chip:hover {
+  background: var(--surface-container);
+}
+
+.theme-chip--active {
+  background: rgba(143, 52, 37, 0.08);
+  border-color: rgba(143, 52, 37, 0.35);
+  color: var(--primary);
+}
+
+.theme-chip__icon {
+  opacity: 0.7;
+}
 
 @media (min-width: 480px) {
   .mood-card { padding: 24px 28px; }

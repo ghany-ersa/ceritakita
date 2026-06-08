@@ -136,3 +136,10 @@ export const themes = [
 export function getThemeById(id) {
   return themes.find(t => t.id === id) ?? null
 }
+
+// Kembalikan semua kartu dari tema yang dipilih, masing-masing membawa themeId dan themeName
+export function getCardsForMix(selectedThemeIds) {
+  return themes
+    .filter(t => selectedThemeIds.includes(t.id))
+    .flatMap(t => t.cards.map(c => ({ ...c, themeId: t.id, themeName: t.name })))
+}
