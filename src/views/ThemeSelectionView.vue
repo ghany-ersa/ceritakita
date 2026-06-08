@@ -52,8 +52,8 @@ function selectMix() {
             >{{ hasUnlockAll ? 'casino' : 'lock' }}</span>
           </div>
           <div class="mix-btn__text">
-            <h3 class="mix-btn__title">🎲 Campur Semua Tema</h3>
-            <p class="mix-btn__desc">{{ hasUnlockAll ? 'Pertanyaan acak dari semua tema' : 'Butuh Unlock All untuk mengakses' }}</p>
+            <h3 class="mix-btn__title">🎲 Campurkan Tema</h3>
+            <p class="mix-btn__desc">{{ hasUnlockAll ? 'Pertanyaan acak dari tema' : 'Butuh Unlock All untuk mengakses' }}</p>
           </div>
           <span v-if="!hasUnlockAll" class="mix-btn__badge">Premium</span>
         </button>

@@ -286,12 +286,13 @@ function handleCompleteDare() {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  width: 100%;
 }
 
 /* ── Side buttons (desktop only) ── */
 .desktop-only { display: none; }
 
-@media (min-width: 760px) {
+@media (min-width: 1024px) {
   .desktop-only { display: flex; }
   .mobile-only  { display: none !important; }
 }

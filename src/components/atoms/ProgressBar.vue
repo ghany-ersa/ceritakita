@@ -18,7 +18,7 @@ const percentage = computed(() => (props.current / props.total) * 100)
 <style scoped>
 .progress-track {
   position: absolute;
-  top: 64px;
+  top: calc(64px + env(safe-area-inset-top, 0px));
   left: 0;
   right: 0;
   height: 3px;
