@@ -1,5 +1,14 @@
 import { ref, computed, watch } from 'vue'
 import { getThemeById } from '../data/themes'
+import {
+  DARE_DURATION,
+  storageKey,
+  loadState,
+  saveState,
+  clearState,
+  buildShuffledCards,
+  pickRandomDare,
+} from '../services/sessionService'
 
 const DEFAULT_DARES = [
   'Bisikkan satu rahasia kecil di telinga pasanganmu.',
@@ -9,57 +18,13 @@ const DEFAULT_DARES = [
   'Tatap mata pasanganmu tanpa berkedip selama 30 detik.',
 ]
 
-const DARE_DURATION = 30
-
-function storageKey(themeId, mood) {
-  return `session_state_${themeId}_${mood ?? 'semua'}`
-}
-
-function loadState(key) {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-function saveState(key, state) {
-  try {
-    localStorage.setItem(key, JSON.stringify(state))
-  } catch {}
-}
-
-function clearState(key) {
-  try {
-    localStorage.removeItem(key)
-  } catch {}
-}
-
 export function useCardSession(themeId, mood, cards) {
   const key = storageKey(themeId, mood)
   const saved = loadState(key)
 
-  // Shuffle dengan seed deterministik berdasarkan urutan ID kartu
-  // supaya urutan bisa direproduksi setelah refresh
-  function buildShuffled(savedOrder) {
-    if (savedOrder) {
-      // Urutkan kartu sesuai urutan yang sudah tersimpan
-      const cardMap = Object.fromEntries(cards.map(c => [c.id, c]))
-      const ordered = savedOrder.map(id => cardMap[id]).filter(Boolean)
-      // Tambahkan kartu baru yang mungkin belum ada di savedOrder
-      const savedSet = new Set(savedOrder)
-      const newCards = cards.filter(c => !savedSet.has(c.id))
-      return [...ordered, ...newCards]
-    }
-    return [...cards].sort(() => Math.random() - 0.5)
-  }
-
-  const shuffled = buildShuffled(saved?.cardOrder ?? null)
+  const shuffled = buildShuffledCards(cards, saved?.cardOrder ?? null)
   const cardOrder = shuffled.map(c => c.id)
 
-  // Jika sesi baru, langsung simpan urutan kartu supaya refresh sebelum action apapun
-  // tetap bisa merestorasi posisi yang benar
   if (!saved) {
     saveState(key, {
       cardOrder,
@@ -81,18 +46,11 @@ export function useCardSession(themeId, mood, cards) {
   const dareDone        = ref(saved?.dareDone ?? false)
   const sessionFinished = ref(saved?.sessionFinished ?? false)
   const pendingFeedback = ref(saved?.pendingFeedback ?? false)
-
-  // Kartu yang sudah ditampilkan sejak feedback terakhir (untuk dicatat di feedback)
   const shownSinceFeedback = ref(saved?.shownSinceFeedback ?? [])
 
   const currentCard = computed(() => shuffled[currentIndex.value] ?? null)
+  const progress = computed(() => ({ current: currentIndex.value, total: shuffled.length }))
 
-  const progress = computed(() => ({
-    current: currentIndex.value,
-    total: shuffled.length,
-  }))
-
-  // Persist setiap kali state berubah
   function persist() {
     saveState(key, {
       cardOrder,
@@ -118,27 +76,20 @@ export function useCardSession(themeId, mood, cards) {
     }
   }
 
-  // Dipanggil dari view saat kartu pertama kali ditampilkan
   function recordShownCard(card) {
     if (!card) return
-    const alreadyRecorded = shownSinceFeedback.value.some(c => c.id === card.id)
-    if (!alreadyRecorded) {
+    if (!shownSinceFeedback.value.some(c => c.id === card.id)) {
       shownSinceFeedback.value.push({ id: card.id, question: card.question })
     }
   }
 
-  // Dipanggil setelah feedback dikirim atau dilewati, reset buffer
   function resetShownSinceFeedback() {
     shownSinceFeedback.value = []
   }
 
-  function getDares() {
-    return getThemeById(themeId)?.dares ?? DEFAULT_DARES
-  }
-
   function triggerDare() {
-    const dares = getDares()
-    currentDare.value  = dares[Math.floor(Math.random() * dares.length)]
+    const dares = getThemeById(themeId)?.dares ?? DEFAULT_DARES
+    currentDare.value  = pickRandomDare(dares)
     dareTimeLeft.value = DARE_DURATION
     dareDone.value     = false
     showDare.value     = true
