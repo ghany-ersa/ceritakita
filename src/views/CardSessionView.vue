@@ -7,6 +7,7 @@ import { useSwipeCard } from '../composables/useSwipeCard'
 import { usePurchase } from '../composables/usePurchase'
 import { useFeedback } from '../composables/useFeedback'
 import { useBreakpoint } from '../composables/useBreakpoint'
+import { useOnboarding } from '../composables/useOnboarding'
 import AmbientBackground from '../components/organisms/AmbientBackground.vue'
 import PageHeader from '../components/molecules/PageHeader.vue'
 import IconButton from '../components/atoms/IconButton.vue'
@@ -15,6 +16,7 @@ import SessionCard from '../components/organisms/SessionCard.vue'
 import SessionFinished from '../components/organisms/SessionFinished.vue'
 import DareCard from '../components/organisms/DareCard.vue'
 import FeedbackModal from '../components/organisms/FeedbackModal.vue'
+import OnboardingModal from '../components/organisms/OnboardingModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -128,6 +130,7 @@ const cardKey = ref(0)
 const cardVisible = ref(true)
 
 const { isLargeScreen } = useBreakpoint()
+const { showOnboarding, completeOnboarding, openOnboarding } = useOnboarding()
 
 // Catat kartu yang sedang ditampilkan saat pertama kali muncul
 onMounted(() => recordShownCard(currentCard.value))
@@ -181,7 +184,7 @@ function handleCompleteDare() {
         <IconButton icon="close" aria-label="Akhiri Sesi" @click="router.push('/themes')" />
       </template>
       <template #right>
-        <IconButton icon="help_outline" aria-label="Bantuan" :disabled="true" style="opacity:0.5;" />
+        <IconButton icon="help_outline" aria-label="Bantuan" @click="openOnboarding" />
       </template>
     </PageHeader>
 
@@ -255,6 +258,8 @@ function handleCompleteDare() {
       <FeedbackModal v-if="showFeedback" :questions="shownSinceFeedback" :trigger="feedbackTrigger"
         :is-premium="hasUnlockAll" @submit="handleFeedbackSubmit" @skip="handleFeedbackSkip" />
     </Transition>
+
+    <OnboardingModal :visible="showOnboarding" @done="completeOnboarding()" />
   </div>
 </template>
 

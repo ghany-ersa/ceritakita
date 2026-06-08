@@ -49,13 +49,6 @@
             >
               Mulai Bermain
             </BaseButton>
-            <button
-              v-if="current < slides.length - 1"
-              class="skip-btn"
-              @click="$emit('done')"
-            >
-              Lewati
-            </button>
           </div>
 
         </div>
@@ -235,17 +228,6 @@ function skip() {
   gap: 12px;
 }
 
-.skip-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-label);
-  font-size: 0.8rem;
-  color: var(--on-surface-variant);
-  opacity: 0.7;
-  padding: 4px 8px;
-}
-.skip-btn:hover { opacity: 1; }
 
 /* Overlay transition */
 .onboarding-fade-enter-active,

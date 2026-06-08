@@ -23,5 +23,9 @@ export function useOnboarding(user) {
     showOnboarding.value = false
   }
 
-  return { showOnboarding, completeOnboarding }
+  function openOnboarding() {
+    showOnboarding.value = true
+  }
+
+  return { showOnboarding, completeOnboarding, openOnboarding }
 }
