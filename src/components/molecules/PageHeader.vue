@@ -32,9 +32,10 @@ defineProps({
 
 <style scoped>
 .page-header {
-  height: 64px;
   display: flex;
   align-items: center;
+  padding-top: env(safe-area-inset-top, 0px);
+  min-height: calc(64px + env(safe-area-inset-top, 0px));
   position: relative;
   z-index: 20;
 }
