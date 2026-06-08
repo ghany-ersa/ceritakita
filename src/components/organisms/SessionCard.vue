@@ -9,17 +9,17 @@
     @pointercancel="$emit('pointerup', $event)"
     @touchstart.passive="true"
   >
-    <!-- Swipe hint: Jawab (right) -->
+    <!-- Swipe hint: Jawab (left) -->
     <Transition name="hint-fade">
-      <div v-if="showAnswerHint" class="swipe-hint swipe-hint--right">
+      <div v-if="showAnswerHint" class="swipe-hint swipe-hint--left">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">check_circle</span>
         <span>Jawab</span>
       </div>
     </Transition>
 
-    <!-- Swipe hint: Dare (left) -->
+    <!-- Swipe hint: Dare (right) -->
     <Transition name="hint-fade">
-      <div v-if="showDareHint" class="swipe-hint swipe-hint--left">
+      <div v-if="showDareHint" class="swipe-hint swipe-hint--right">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">local_fire_department</span>
         <span>Dare!</span>
       </div>
@@ -108,17 +108,17 @@ defineEmits(['pointerdown', 'pointermove', 'pointerup'])
 
 .swipe-hint--right {
   left: 20px;
-  background: rgba(20, 160, 80, 0.12);
-  border-color: rgba(20, 160, 80, 0.7);
-  color: #0f8040;
+  background: rgba(143, 52, 37, 0.1);
+  border-color: rgba(143, 52, 37, 0.65);
+  color: var(--primary);
   transform: rotate(-8deg);
 }
 
 .swipe-hint--left {
   right: 20px;
-  background: rgba(143, 52, 37, 0.1);
-  border-color: rgba(143, 52, 37, 0.65);
-  color: var(--primary);
+  background: rgba(20, 160, 80, 0.12);
+  border-color: rgba(20, 160, 80, 0.7);
+  color: #0f8040;
   transform: rotate(8deg);
 }
 

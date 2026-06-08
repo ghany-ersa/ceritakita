@@ -209,9 +209,15 @@ function handleCompleteDare() {
           <div class="card-zone">
             <Transition name="card-in">
               <SessionCard v-if="cardVisible" :key="cardKey" :question="currentCard?.question"
-                :label="currentCard?.themeName ?? theme?.name ?? ''" :card-style="cardStyle" :is-dragging="isDragging"
-                :is-flying="isFlying" :show-answer-hint="showAnswerHint" :show-dare-hint="showDareHint"
-                @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" />
+                :label="currentCard?.themeName ?? theme?.name ?? ''"
+                :card-style="isLargeScreen ? {} : cardStyle"
+                :is-dragging="isLargeScreen ? false : isDragging"
+                :is-flying="isLargeScreen ? false : isFlying"
+                :show-answer-hint="isLargeScreen ? false : showAnswerHint"
+                :show-dare-hint="isLargeScreen ? false : showDareHint"
+                @pointerdown="isLargeScreen ? null : onPointerDown($event)"
+                @pointermove="isLargeScreen ? null : onPointerMove($event)"
+                @pointerup="isLargeScreen ? null : onPointerUp($event)" />
             </Transition>
           </div>
 
