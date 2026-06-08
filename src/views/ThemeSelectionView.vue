@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { themes } from '../data/themes'
 import { usePurchase } from '../composables/usePurchase'
+import { useAuth } from '../composables/useAuth'
 import PageHeader from '../components/molecules/PageHeader.vue'
 import IconButton from '../components/atoms/IconButton.vue'
 import ThemeGrid from '../components/organisms/ThemeGrid.vue'
@@ -10,10 +11,19 @@ import UserMenu from '../components/molecules/UserMenu.vue'
 
 const router = useRouter()
 const { hasAccess, hasUnlockAll, isTrialAccess } = usePurchase()
+const { user, signInWithGoogle } = useAuth()
+
+function requireAuthThen(path) {
+  if (user.value) {
+    router.push(path)
+  } else {
+    signInWithGoogle(path)
+  }
+}
 
 function selectTheme(theme) {
   if (hasAccess(theme.id, theme.isFree)) {
-    router.push(`/mood/${theme.id}`)
+    requireAuthThen(`/mood/${theme.id}`)
   } else {
     router.push(`/paywall/${theme.id}`)
   }
@@ -21,7 +31,7 @@ function selectTheme(theme) {
 
 function selectMix() {
   if (hasUnlockAll.value) {
-    router.push('/mood/mix')
+    requireAuthThen('/mood/mix')
   } else {
     router.push('/paywall/mix')
   }
