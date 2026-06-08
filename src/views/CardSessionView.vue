@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getThemeById, themes, getCardsForMix } from '../data/themes'
+import { getThemeById, themes, getCardsForMix, getCardsForMixCampur } from '../data/themes'
 import { useCardSession } from '../composables/useCardSession'
 import { useSwipeCard } from '../composables/useSwipeCard'
 import { usePurchase } from '../composables/usePurchase'
@@ -30,14 +30,24 @@ const selectedThemeIds = computed(() => {
   return themes.map(t => t.id)
 })
 
-const allCards = computed(() => {
-  const cards = isMix
-    ? getCardsForMix(selectedThemeIds.value)
-    : (getThemeById(themeId)?.cards ?? []).map(c => ({ ...c, themeName: getThemeById(themeId)?.name }))
+function buildAllCards() {
+  if (isMix) {
+    if (mood === 'semua') return getCardsForMixCampur(selectedThemeIds.value)
+    return getCardsForMix(selectedThemeIds.value).filter(c => c.mood === mood)
+  }
 
-  if (mood === 'semua') return cards
+  const t = getThemeById(themeId)
+  const cards = (t?.cards ?? []).map(c => ({ ...c, themeName: t?.name }))
+
+  if (mood === 'semua') {
+    const max = t?.maxCards
+    return [...cards].sort(() => Math.random() - 0.5).slice(0, max)
+  }
   return cards.filter(c => c.mood === mood)
-})
+}
+
+// Dijalankan sekali agar pengacakan konsisten selama sesi
+const allCards = buildAllCards()
 
 const theme = computed(() => {
   if (isMix) return { name: 'Campur Semua Tema' }
@@ -45,12 +55,12 @@ const theme = computed(() => {
   return t ? { name: t.name } : null
 })
 
-if (allCards.value.length === 0) router.replace('/themes')
+if (allCards.length === 0) router.replace('/themes')
 
 const { hasUnlockAll } = usePurchase()
 const { shouldShowFeedback, saveFeedback } = useFeedback()
 
-const session = useCardSession(themeId, mood, allCards.value)
+const session = useCardSession(themeId, mood, allCards)
 const {
   currentCard, progress, showDare,
   currentDare, dareTimeLeft, dareDone, sessionFinished,
