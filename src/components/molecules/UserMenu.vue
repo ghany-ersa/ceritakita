@@ -16,9 +16,9 @@ async function handleSignOut() {
 
 <template>
   <!-- Belum login -->
-  <button v-if="!loading && !user" class="login-btn" @click="signInWithGoogle">
-    <span class="material-symbols-outlined" style="font-size:18px;">account_circle</span>
-    Masuk
+  <button v-if="!loading && !user" class="login-btn" @click="signInWithGoogle()">
+    <span class="material-symbols-outlined" style="font-size:18px;">login</span>
+    <span class="login-btn__label">Masuk</span>
   </button>
 
   <!-- Loading session -->
@@ -68,9 +68,11 @@ export default {
 .login-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   height: 36px;
-  padding: 0 14px;
+  width: 36px;
+  padding: 0;
   border-radius: var(--radius-full);
   background: var(--primary-container);
   color: var(--on-primary-container);
@@ -85,6 +87,16 @@ export default {
 }
 .login-btn:hover { background: var(--primary); color: var(--on-primary); }
 .login-btn:active { transform: scale(0.95); }
+
+.login-btn__label { display: none; }
+
+@media (min-width: 560px) {
+  .login-btn {
+    width: auto;
+    padding: 0 14px;
+  }
+  .login-btn__label { display: inline; }
+}
 
 /* Avatar button */
 .avatar {
