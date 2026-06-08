@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 const STORAGE_KEY = 'ck_purchases'
+const TESTING_UNLOCK = import.meta.env.VITE_UNLOCK_ALL_FOR_TESTING === 'true'
 
 function getStored() {
   try {
@@ -13,10 +14,11 @@ function getStored() {
 const purchases = ref(getStored())
 
 export function usePurchase() {
-  const hasUnlockAll = ref(purchases.value['unlock_all'] === true)
+  const hasUnlockAll = ref(TESTING_UNLOCK || purchases.value['unlock_all'] === true)
 
   function hasAccess(themeId, isFree) {
     if (isFree) return true
+    if (TESTING_UNLOCK) return true
     if (hasUnlockAll.value) return true
     return purchases.value[themeId] === true
   }
