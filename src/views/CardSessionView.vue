@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getThemeById, themes, getCardsForMix, getCardsForMixCampur } from '../data/themes'
+import { getThemeById, themes, getCardsForMixMood, getCardsForMixCampur } from '../data/themes'
 import { useCardSession } from '../composables/useCardSession'
 import { useSwipeCard } from '../composables/useSwipeCard'
 import { usePurchase } from '../composables/usePurchase'
@@ -33,17 +33,14 @@ const selectedThemeIds = computed(() => {
 function buildAllCards() {
   if (isMix) {
     if (mood === 'semua') return getCardsForMixCampur(selectedThemeIds.value)
-    return getCardsForMix(selectedThemeIds.value).filter(c => c.mood === mood)
+    return getCardsForMixMood(selectedThemeIds.value, mood)
   }
 
   const t = getThemeById(themeId)
   const cards = (t?.cards ?? []).map(c => ({ ...c, themeName: t?.name }))
-
-  if (mood === 'semua') {
-    const max = t?.maxCards
-    return [...cards].sort(() => Math.random() - 0.5).slice(0, max)
-  }
-  return cards.filter(c => c.mood === mood)
+  const max = t?.maxCards ?? 10
+  const filtered = mood === 'semua' ? cards : cards.filter(c => c.mood === mood)
+  return [...filtered].sort(() => Math.random() - 0.5).slice(0, max)
 }
 
 // Dijalankan sekali agar pengacakan konsisten selama sesi
@@ -64,12 +61,13 @@ const session = useCardSession(themeId, mood, allCards)
 const {
   currentCard, progress, showDare,
   currentDare, dareTimeLeft, dareDone, sessionFinished,
-  shownSinceFeedback,
+  shownSinceFeedback, pendingFeedback,
   triggerDare, tickDare, completeDare, nextCard,
   recordShownCard, resetShownSinceFeedback, resetSession, DARE_DURATION,
 } = session
 
-const showFeedback = ref(false)
+// showFeedback di-drive dari pendingFeedback yang dipersist — tahan refresh
+const showFeedback = pendingFeedback
 const feedbackTrigger = ref('interval_10')
 
 function checkFeedback(isSessionEnd = false) {
@@ -80,7 +78,7 @@ function checkFeedback(isSessionEnd = false) {
   })
   if (show) {
     feedbackTrigger.value = isSessionEnd ? 'session_end' : 'interval_10'
-    showFeedback.value = true
+    pendingFeedback.value = true
   }
 }
 
@@ -94,16 +92,16 @@ function handleFeedbackSubmit({ rating, comment }) {
     isPremium: hasUnlockAll.value,
     trigger: feedbackTrigger.value,
   })
-  showFeedback.value = false
+  pendingFeedback.value = false
   resetShownSinceFeedback()
 }
 
 function handleFeedbackSkip() {
-  showFeedback.value = false
+  pendingFeedback.value = false
   resetShownSinceFeedback()
 }
 
-// Watch session selesai → feedback premium
+// Watch session selesai → tampilkan feedback
 watch(sessionFinished, (done) => {
   if (done) checkFeedback(true)
 })

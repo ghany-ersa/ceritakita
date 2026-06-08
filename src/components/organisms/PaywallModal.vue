@@ -12,12 +12,12 @@
         />
         <div class="modal-left__inner">
           <img
-            class="modal-left__logo"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFE693_3u-31u_k5jiJHQffwtMujzT1XQTLj7VquKvJSw_77TM-UfR3VF_250YHv7GOQJ7qkBWnMutBsJfW6qNCnKq9gJ5Ej10C9ftTo7yu06EwNzLa-UGShJoJpoZcoyDpUsv0PGmt98j-9na7IjLUy97JjUre6QfkzMQ2T3pL_NG9r-PWTzscJpw5Vn82y9cGkpqSl_gvi80PNpQ"
+            class="modal-left__bg"
+            :src="placeholderImg"
             alt="CeritaKita"
           />
           <div class="modal-left__key-wrap">
-            <span class="material-symbols-outlined modal-left__key-icon" style="font-variation-settings:'FILL' 1;font-size:48px;">key</span>
+            <span class="material-symbols-outlined modal-left__key-icon" style="font-variation-settings:'FILL' 1;">key</span>
           </div>
         </div>
       </div>
@@ -72,6 +72,7 @@ import AppLogo from '../atoms/AppLogo.vue'
 import IconButton from '../atoms/IconButton.vue'
 import BaseButton from '../atoms/BaseButton.vue'
 import BenefitItem from '../molecules/BenefitItem.vue'
+import placeholderImg from '../../assets/placeholder.png'
 
 defineProps({
   showLoginNote: { type: Boolean, default: false },
@@ -125,27 +126,28 @@ defineEmits(['close', 'purchase'])
 
 .modal-left__inner {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 32px;
+  position: relative;
+  overflow: hidden;
 }
 
-.modal-left__logo { height: 48px; width: auto; object-fit: contain; }
+.modal-left__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
 
 .modal-left__key-wrap {
-  width: 96px;
-  height: 96px;
-  background: var(--primary-container);
-  border-radius: var(--radius-xl);
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  z-index: 1;
 }
-.modal-left__key-icon { color: var(--on-primary-container); }
+.modal-left__key-icon { color: var(--on-surface-variant); font-size: 64px !important; }
 
 /* Right col */
 .modal-right {

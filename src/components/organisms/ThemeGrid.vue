@@ -7,7 +7,7 @@
       :icon="themeIcons[theme.id] || 'style'"
       :icon-bg="themeColors[theme.id]?.bg || 'rgba(143,52,37,0.08)'"
       :icon-color="themeColors[theme.id]?.icon || 'var(--primary)'"
-      :card-count="theme.cards.length"
+      :card-count="theme.maxCards"
       :is-free="theme.isFree"
       :locked="!hasAccess(theme.id, theme.isFree)"
       :is-trial="isTrialAccess(theme.id, theme.isFree)"

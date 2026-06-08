@@ -201,7 +201,7 @@ export const themes = [
   {
     id: 'mimpi-ambisi',
     name: 'Impian',
-    isFree: false,
+    isFree: true,
     maxCards: 12,
     cards: [
       { id: 'i2', question: 'Kalau uang bukan masalah, pekerjaan apa yang ingin kamu lakukan?', mood: 'santai' },
@@ -481,8 +481,18 @@ export function getCardsForMix(selectedThemeIds) {
     .flatMap(t => t.cards.map(c => ({ ...c, themeId: t.id, themeName: t.name })))
 }
 
-// Mode campur mix: per tema ambil acak sejumlah maxCards (= total kartu / 2)
-// sehingga tiap tema berkontribusi proporsional terhadap total
+// Mode santai/dalam mix: per tema filter mood lalu acak slice maxCards
+export function getCardsForMixMood(selectedThemeIds, mood) {
+  return themes
+    .filter(t => selectedThemeIds.includes(t.id))
+    .flatMap(t => {
+      const filtered = t.cards.filter(c => c.mood === mood).map(c => ({ ...c, themeId: t.id, themeName: t.name }))
+      const max = t.maxCards ?? filtered.length
+      return [...filtered].sort(() => Math.random() - 0.5).slice(0, max)
+    })
+}
+
+// Mode campur mix: per tema ambil acak sejumlah maxCards dari semua mood
 export function getCardsForMixCampur(selectedThemeIds) {
   return themes
     .filter(t => selectedThemeIds.includes(t.id))

@@ -70,6 +70,7 @@ export function useCardSession(themeId, mood, cards) {
       dareDone:           false,
       sessionFinished:    false,
       shownSinceFeedback: [],
+      pendingFeedback:    false,
     })
   }
 
@@ -79,6 +80,7 @@ export function useCardSession(themeId, mood, cards) {
   const dareTimeLeft    = ref(saved?.dareTimeLeft ?? DARE_DURATION)
   const dareDone        = ref(saved?.dareDone ?? false)
   const sessionFinished = ref(saved?.sessionFinished ?? false)
+  const pendingFeedback = ref(saved?.pendingFeedback ?? false)
 
   // Kartu yang sudah ditampilkan sejak feedback terakhir (untuk dicatat di feedback)
   const shownSinceFeedback = ref(saved?.shownSinceFeedback ?? [])
@@ -101,10 +103,11 @@ export function useCardSession(themeId, mood, cards) {
       dareDone:            dareDone.value,
       sessionFinished:     sessionFinished.value,
       shownSinceFeedback:  shownSinceFeedback.value,
+      pendingFeedback:     pendingFeedback.value,
     })
   }
 
-  watch([currentIndex, showDare, currentDare, dareTimeLeft, dareDone, sessionFinished, shownSinceFeedback], persist)
+  watch([currentIndex, showDare, currentDare, dareTimeLeft, dareDone, sessionFinished, shownSinceFeedback, pendingFeedback], persist)
 
   function nextCard() {
     if (currentIndex.value < shuffled.length - 1) {
@@ -168,6 +171,7 @@ export function useCardSession(themeId, mood, cards) {
     dareDone,
     sessionFinished,
     shownSinceFeedback,
+    pendingFeedback,
     triggerDare,
     tickDare,
     completeDare,

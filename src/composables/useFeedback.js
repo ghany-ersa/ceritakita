@@ -22,7 +22,8 @@ export function useFeedback() {
   const { user } = useAuth()
 
   function shouldShowFeedback({ cardsSinceLastFeedback, isPremium, isSessionEnd }) {
-    if (isPremium) return isSessionEnd
+    if (isSessionEnd) return true
+    if (isPremium) return false
     return cardsSinceLastFeedback > 0 && cardsSinceLastFeedback % FREE_INTERVAL === 0
   }
 

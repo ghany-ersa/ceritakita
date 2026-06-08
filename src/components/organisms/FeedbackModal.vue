@@ -32,7 +32,7 @@ function submit() {
 </script>
 
 <template>
-  <div class="feedback-backdrop" @click.self="emit('skip')">
+  <div class="feedback-backdrop">
     <div class="feedback-sheet">
       <GrainTexture :opacity="0.03" />
 
@@ -48,9 +48,6 @@ function submit() {
           <p class="feedback-sheet__label">{{ trigger === 'session_end' ? 'Sesi Selesai' : 'Setiap 10 Kartu' }}</p>
           <h3 class="feedback-sheet__title">Bagaimana pertanyaannya?</h3>
         </div>
-        <button class="feedback-sheet__close" aria-label="Lewati" @click="emit('skip')">
-          <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-        </button>
       </div>
 
       <!-- Pertanyaan yang sudah ditampilkan -->
@@ -110,7 +107,6 @@ function submit() {
           <span class="material-symbols-outlined" style="font-size:18px;">send</span>
           Kirim Feedback
         </BaseButton>
-        <button class="feedback-skip" @click="emit('skip')">Lewati</button>
       </div>
     </div>
   </div>
@@ -199,23 +195,6 @@ function submit() {
   color: var(--on-surface);
   line-height: 1.3;
 }
-
-.feedback-sheet__close {
-  margin-left: auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--surface-container-high);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--on-surface-variant);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background var(--transition);
-}
-.feedback-sheet__close:hover { background: var(--surface-container-highest); }
 
 /* Questions list */
 .feedback-questions {
@@ -344,18 +323,4 @@ function submit() {
   gap: 8px;
 }
 
-.feedback-skip {
-  background: none;
-  border: none;
-  font-family: var(--font-label);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--on-surface-variant);
-  opacity: 0.5;
-  cursor: pointer;
-  padding: 8px;
-  text-align: center;
-  transition: opacity var(--transition);
-}
-.feedback-skip:hover { opacity: 0.8; }
 </style>
