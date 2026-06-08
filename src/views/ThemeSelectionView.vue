@@ -8,13 +8,21 @@ import ThemeGrid from '../components/organisms/ThemeGrid.vue'
 import GrainTexture from '../components/atoms/GrainTexture.vue'
 
 const router = useRouter()
-const { hasAccess } = usePurchase()
+const { hasAccess, hasUnlockAll } = usePurchase()
 
 function selectTheme(theme) {
   if (hasAccess(theme.id, theme.isFree)) {
     router.push(`/mood/${theme.id}`)
   } else {
     router.push(`/paywall/${theme.id}`)
+  }
+}
+
+function selectMix() {
+  if (hasUnlockAll.value) {
+    router.push('/mood/mix')
+  } else {
+    router.push('/paywall/mix')
   }
 }
 </script>
@@ -35,15 +43,19 @@ function selectTheme(theme) {
           <p class="page-subtitle">Pilih tema obrolan untuk malam ini.</p>
         </div>
 
-        <button class="mix-btn" @click="router.push('/mood/mix')">
+        <button class="mix-btn" :class="{ 'mix-btn--locked': !hasUnlockAll }" @click="selectMix">
           <GrainTexture :opacity="0.04" />
           <div class="mix-btn__icon-wrap">
-            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">casino</span>
+            <span
+              class="material-symbols-outlined"
+              style="font-variation-settings:'FILL' 1;"
+            >{{ hasUnlockAll ? 'casino' : 'lock' }}</span>
           </div>
           <div class="mix-btn__text">
             <h3 class="mix-btn__title">🎲 Campur Semua Tema</h3>
-            <p class="mix-btn__desc">Pertanyaan acak dari semua tema</p>
+            <p class="mix-btn__desc">{{ hasUnlockAll ? 'Pertanyaan acak dari semua tema' : 'Butuh Unlock All untuk mengakses' }}</p>
           </div>
+          <span v-if="!hasUnlockAll" class="mix-btn__badge">Premium</span>
         </button>
 
         <ThemeGrid :themes="themes" :has-access="hasAccess" @select="selectTheme" />
@@ -149,6 +161,41 @@ function selectTheme(theme) {
   font-size: 0.8rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.75);
+}
+
+.mix-btn--locked {
+  opacity: 0.72;
+  background: var(--surface-container-high);
+  box-shadow: var(--shadow-sm);
+}
+
+.mix-btn--locked .mix-btn__icon-wrap {
+  background: rgba(137, 114, 109, 0.15);
+  color: var(--on-surface-variant);
+}
+
+.mix-btn--locked .mix-btn__title {
+  color: var(--on-surface);
+}
+
+.mix-btn--locked .mix-btn__desc {
+  color: var(--on-surface-variant);
+}
+
+.mix-btn__badge {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(143, 52, 37, 0.1);
+  border: 1px solid rgba(143, 52, 37, 0.2);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
 }
 
 @media (min-width: 1024px) {

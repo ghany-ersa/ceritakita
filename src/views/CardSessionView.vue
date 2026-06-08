@@ -1,9 +1,11 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getThemeById, themes } from '../data/themes'
 import { useCardSession } from '../composables/useCardSession'
 import { useSwipeCard } from '../composables/useSwipeCard'
+import { usePurchase } from '../composables/usePurchase'
+import { useFeedback } from '../composables/useFeedback'
 import AmbientBackground from '../components/organisms/AmbientBackground.vue'
 import PageHeader from '../components/molecules/PageHeader.vue'
 import IconButton from '../components/atoms/IconButton.vue'
@@ -11,6 +13,7 @@ import ProgressBar from '../components/atoms/ProgressBar.vue'
 import SessionCard from '../components/organisms/SessionCard.vue'
 import SessionFinished from '../components/organisms/SessionFinished.vue'
 import DareCard from '../components/organisms/DareCard.vue'
+import FeedbackModal from '../components/organisms/FeedbackModal.vue'
 
 const route   = useRoute()
 const router  = useRouter()
@@ -34,16 +37,66 @@ const theme = computed(() => {
 
 if (allCards.value.length === 0) router.replace('/themes')
 
+const { hasUnlockAll } = usePurchase()
+const { shouldShowFeedback, saveFeedback } = useFeedback()
+
 const session = useCardSession(themeId, mood, allCards.value)
 const {
   currentCard, progress, showDare,
   currentDare, dareTimeLeft, dareDone, sessionFinished,
-  triggerDare, tickDare, completeDare, nextCard, DARE_DURATION,
+  shownSinceFeedback,
+  triggerDare, tickDare, completeDare, nextCard,
+  recordShownCard, resetShownSinceFeedback, DARE_DURATION,
 } = session
 
+const showFeedback   = ref(false)
+const feedbackTrigger = ref('interval_10')
+
+function checkFeedback(isSessionEnd = false) {
+  const show = shouldShowFeedback({
+    cardsSinceLastFeedback: shownSinceFeedback.value.length,
+    isPremium: hasUnlockAll.value,
+    isSessionEnd,
+  })
+  if (show) {
+    feedbackTrigger.value = isSessionEnd ? 'session_end' : 'interval_10'
+    showFeedback.value = true
+  }
+}
+
+function handleFeedbackSubmit({ rating, comment }) {
+  saveFeedback({
+    rating,
+    comment,
+    questions:  shownSinceFeedback.value,
+    themeId,
+    mood,
+    isPremium:  hasUnlockAll.value,
+    trigger:    feedbackTrigger.value,
+  })
+  showFeedback.value = false
+  resetShownSinceFeedback()
+}
+
+function handleFeedbackSkip() {
+  showFeedback.value = false
+  resetShownSinceFeedback()
+}
+
+// Watch session selesai → feedback premium
+watch(sessionFinished, (done) => {
+  if (done) checkFeedback(true)
+})
+
 const swipe = useSwipeCard({
-  onSwipeRight: () => nextCard(),
-  onSwipeLeft:  () => triggerDare(),
+  // onSwipeRight dipanggil setelah fly-out selesai (380ms) — langsung update kartu & bump key
+  onSwipeRight: () => {
+    nextCard()
+    cardKey.value++
+    cardVisible.value = true
+    if (!sessionFinished.value) checkFeedback(false)
+  },
+  onSwipeLeft: () => triggerDare(),
 })
 
 const {
@@ -56,23 +109,31 @@ const {
 const cardKey     = ref(0)
 const cardVisible = ref(true)
 
-// skip trigger pertama saat mount — currentCard sudah sesuai, tidak perlu animasi masuk
-const cardWatchReady = ref(false)
-watch(currentCard, () => {
-  if (!cardWatchReady.value) {
-    cardWatchReady.value = true
-    return
-  }
+// Catat kartu yang sedang ditampilkan saat pertama kali muncul
+onMounted(() => recordShownCard(currentCard.value))
+watch(cardKey, () => recordShownCard(currentCard.value))
+
+// Animasi pergantian kartu dipanggil secara eksplisit, bukan reaktif,
+// supaya refresh tidak memicu pergantian kartu tanpa action
+function animateNextCard(callback) {
   cardVisible.value = false
   setTimeout(() => {
+    callback()
     cardKey.value++
     cardVisible.value = true
   }, 30)
-})
+}
 
 function handleAnswer() { triggerSwipe(1) }
 function handleDare()   { triggerSwipe(-1) }
 function handleDareTick() { tickDare() }
+
+function handleCompleteDare() {
+  animateNextCard(() => {
+    completeDare()
+    if (!sessionFinished.value) checkFeedback(false)
+  })
+}
 </script>
 
 <template>
@@ -162,7 +223,18 @@ function handleDareTick() { tickDare() }
         :timer-done="dareDone"
         :total-duration="DARE_DURATION"
         @tick="handleDareTick"
-        @done="completeDare"
+        @done="handleCompleteDare"
+      />
+    </Transition>
+
+    <Transition name="feedback-slide">
+      <FeedbackModal
+        v-if="showFeedback"
+        :questions="shownSinceFeedback"
+        :trigger="feedbackTrigger"
+        :is-premium="hasUnlockAll"
+        @submit="handleFeedbackSubmit"
+        @skip="handleFeedbackSkip"
       />
     </Transition>
   </div>
@@ -334,5 +406,13 @@ function handleDareTick() { tickDare() }
 @keyframes dareSlideOut {
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(100%); }
+}
+
+/* ── Feedback slide-up ── */
+.feedback-slide-enter-active {
+  animation: dareSlideIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.feedback-slide-leave-active {
+  animation: dareSlideOut 0.28s cubic-bezier(0.4, 0, 1, 1) both;
 }
 </style>

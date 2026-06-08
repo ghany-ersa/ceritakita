@@ -58,12 +58,30 @@ export function useCardSession(themeId, mood, cards) {
   const shuffled = buildShuffled(saved?.cardOrder ?? null)
   const cardOrder = shuffled.map(c => c.id)
 
-  const currentIndex   = ref(saved?.currentIndex ?? 0)
-  const showDare       = ref(saved?.showDare ?? false)
-  const currentDare    = ref(saved?.currentDare ?? '')
-  const dareTimeLeft   = ref(saved?.dareTimeLeft ?? DARE_DURATION)
-  const dareDone       = ref(saved?.dareDone ?? false)
+  // Jika sesi baru, langsung simpan urutan kartu supaya refresh sebelum action apapun
+  // tetap bisa merestorasi posisi yang benar
+  if (!saved) {
+    saveState(key, {
+      cardOrder,
+      currentIndex:       0,
+      showDare:           false,
+      currentDare:        '',
+      dareTimeLeft:       DARE_DURATION,
+      dareDone:           false,
+      sessionFinished:    false,
+      shownSinceFeedback: [],
+    })
+  }
+
+  const currentIndex    = ref(saved?.currentIndex ?? 0)
+  const showDare        = ref(saved?.showDare ?? false)
+  const currentDare     = ref(saved?.currentDare ?? '')
+  const dareTimeLeft    = ref(saved?.dareTimeLeft ?? DARE_DURATION)
+  const dareDone        = ref(saved?.dareDone ?? false)
   const sessionFinished = ref(saved?.sessionFinished ?? false)
+
+  // Kartu yang sudah ditampilkan sejak feedback terakhir (untuk dicatat di feedback)
+  const shownSinceFeedback = ref(saved?.shownSinceFeedback ?? [])
 
   const currentCard = computed(() => shuffled[currentIndex.value] ?? null)
 
@@ -76,16 +94,17 @@ export function useCardSession(themeId, mood, cards) {
   function persist() {
     saveState(key, {
       cardOrder,
-      currentIndex:    currentIndex.value,
-      showDare:        showDare.value,
-      currentDare:     currentDare.value,
-      dareTimeLeft:    dareTimeLeft.value,
-      dareDone:        dareDone.value,
-      sessionFinished: sessionFinished.value,
+      currentIndex:        currentIndex.value,
+      showDare:            showDare.value,
+      currentDare:         currentDare.value,
+      dareTimeLeft:        dareTimeLeft.value,
+      dareDone:            dareDone.value,
+      sessionFinished:     sessionFinished.value,
+      shownSinceFeedback:  shownSinceFeedback.value,
     })
   }
 
-  watch([currentIndex, showDare, currentDare, dareTimeLeft, dareDone, sessionFinished], persist, { flush: 'sync' })
+  watch([currentIndex, showDare, currentDare, dareTimeLeft, dareDone, sessionFinished, shownSinceFeedback], persist)
 
   function nextCard() {
     if (currentIndex.value < shuffled.length - 1) {
@@ -94,6 +113,20 @@ export function useCardSession(themeId, mood, cards) {
       sessionFinished.value = true
       clearState(key)
     }
+  }
+
+  // Dipanggil dari view saat kartu pertama kali ditampilkan
+  function recordShownCard(card) {
+    if (!card) return
+    const alreadyRecorded = shownSinceFeedback.value.some(c => c.id === card.id)
+    if (!alreadyRecorded) {
+      shownSinceFeedback.value.push({ id: card.id, question: card.question })
+    }
+  }
+
+  // Dipanggil setelah feedback dikirim atau dilewati, reset buffer
+  function resetShownSinceFeedback() {
+    shownSinceFeedback.value = []
   }
 
   function getDares() {
@@ -134,11 +167,14 @@ export function useCardSession(themeId, mood, cards) {
     dareTimeLeft,
     dareDone,
     sessionFinished,
+    shownSinceFeedback,
     triggerDare,
     tickDare,
     completeDare,
     handleAnswer,
     nextCard,
+    recordShownCard,
+    resetShownSinceFeedback,
     DARE_DURATION,
   }
 }
