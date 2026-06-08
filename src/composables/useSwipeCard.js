@@ -22,8 +22,8 @@ export function useSwipeCard({ onSwipeRight, onSwipeLeft } = {}) {
     return Math.max(-1, Math.min(1, p))
   })
 
-  const showAnswerHint = computed(() => swipeProgress.value >  0.3)
-  const showDareHint   = computed(() => swipeProgress.value < -0.3)
+  const showAnswerHint = computed(() => swipeProgress.value < -0.3)
+  const showDareHint   = computed(() => swipeProgress.value >  0.3)
 
   // Kartu yang sedang drag — transform langsung tanpa transition
   const cardStyle = computed(() => {
@@ -87,7 +87,7 @@ export function useSwipeCard({ onSwipeRight, onSwipeLeft } = {}) {
 
     // Callback setelah animasi selesai, lalu reset state
     setTimeout(() => {
-      if (dir > 0) onSwipeRight?.()
+      if (dir < 0) onSwipeRight?.()
       else         onSwipeLeft?.()
       // Reset setelah callback (komponen baru sudah di-mount)
       setTimeout(_reset, 50)
