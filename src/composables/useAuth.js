@@ -1,18 +1,22 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
 
+// Singleton — satu ref untuk seluruh app, tidak perlu onMounted per komponen
 const user = ref(null)
+const loading = ref(true)
+
+// Inisialisasi satu kali saat modul pertama kali di-import
+supabase.auth.getSession().then(({ data }) => {
+  user.value = data.session?.user ?? null
+  loading.value = false
+})
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  user.value = session?.user ?? null
+  loading.value = false
+})
 
 export function useAuth() {
-  onMounted(async () => {
-    const { data } = await supabase.auth.getSession()
-    user.value = data.session?.user ?? null
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      user.value = session?.user ?? null
-    })
-  })
-
   async function signInWithGoogle() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -25,5 +29,5 @@ export function useAuth() {
     user.value = null
   }
 
-  return { user, signInWithGoogle, signOut }
+  return { user, loading, signInWithGoogle, signOut }
 }

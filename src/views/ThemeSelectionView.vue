@@ -6,6 +6,7 @@ import PageHeader from '../components/molecules/PageHeader.vue'
 import IconButton from '../components/atoms/IconButton.vue'
 import ThemeGrid from '../components/organisms/ThemeGrid.vue'
 import GrainTexture from '../components/atoms/GrainTexture.vue'
+import UserMenu from '../components/molecules/UserMenu.vue'
 
 const router = useRouter()
 const { hasAccess, hasUnlockAll, isTrialAccess } = usePurchase()
@@ -32,6 +33,9 @@ function selectMix() {
     <PageHeader sticky>
       <template #left>
         <IconButton icon="arrow_back" :weight="400" aria-label="Kembali" @click="router.push('/')" />
+      </template>
+      <template #right>
+        <UserMenu />
       </template>
     </PageHeader>
 

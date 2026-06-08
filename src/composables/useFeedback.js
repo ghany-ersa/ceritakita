@@ -1,5 +1,8 @@
+import { supabase } from '../lib/supabase'
+import { useAuth } from './useAuth'
+
 const STORAGE_KEY = 'ck_feedback_log'
-const FREE_INTERVAL = 10  // tampilkan form tiap 10 kartu untuk free user
+const FREE_INTERVAL = 10
 
 function loadLog() {
   try {
@@ -16,27 +19,46 @@ function saveLog(log) {
 }
 
 export function useFeedback() {
-  // Cek apakah perlu tampilkan form (free: tiap 10 kartu, premium: setelah tema selesai)
+  const { user } = useAuth()
+
   function shouldShowFeedback({ cardsSinceLastFeedback, isPremium, isSessionEnd }) {
     if (isPremium) return isSessionEnd
     return cardsSinceLastFeedback > 0 && cardsSinceLastFeedback % FREE_INTERVAL === 0
   }
 
-  // Simpan satu entri feedback ke log
-  function saveFeedback({ rating, comment, questions, themeId, mood, isPremium, trigger }) {
-    const log = loadLog()
-    log.push({
+  async function saveFeedback({ rating, comment, questions, themeId, mood, isPremium, trigger }) {
+    const entry = {
       id:        crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       themeId,
       mood,
       isPremium,
-      trigger,     // 'interval_10' | 'session_end'
-      rating,      // 1-5
+      trigger,
+      rating,
       comment,
-      questions,   // array { id, question } kartu yang sudah ditampilkan
-    })
+      questions,
+    }
+
+    // Simpan lokal dulu (offline-first)
+    const log = loadLog()
+    log.push(entry)
     saveLog(log)
+
+    // Kirim ke Supabase (best-effort, tidak blokir UI)
+    try {
+      await supabase.from('feedbacks').insert({
+        user_id:    user.value?.id ?? null,
+        theme_id:   themeId,
+        mood,
+        rating,
+        comment:    comment || null,
+        trigger,
+        is_premium: isPremium,
+        questions,
+      })
+    } catch {
+      // Gagal kirim tidak apa-apa — data sudah tersimpan lokal
+    }
   }
 
   function getAllFeedback() {
