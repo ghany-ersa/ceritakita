@@ -155,10 +155,6 @@ export function useCardSession(themeId, mood, cards) {
     nextCard()
   }
 
-  function handleAnswer() {
-    nextCard()
-  }
-
   return {
     currentCard,
     progress,
@@ -171,7 +167,6 @@ export function useCardSession(themeId, mood, cards) {
     triggerDare,
     tickDare,
     completeDare,
-    handleAnswer,
     nextCard,
     recordShownCard,
     resetShownSinceFeedback,

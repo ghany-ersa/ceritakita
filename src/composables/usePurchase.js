@@ -41,5 +41,5 @@ export function usePurchase() {
     return purchases.value['unlock_all'] !== true && purchases.value[themeId] !== true
   }
 
-  return { hasAccess, hasUnlockAll, isTrialAccess, unlockTheme, unlockAll, TESTING_UNLOCK }
+  return { hasAccess, hasUnlockAll, isTrialAccess, unlockTheme, unlockAll }
 }
