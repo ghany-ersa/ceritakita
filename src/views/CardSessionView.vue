@@ -56,7 +56,7 @@ const {
   currentDare, dareTimeLeft, dareDone, sessionFinished,
   shownSinceFeedback,
   triggerDare, tickDare, completeDare, nextCard,
-  recordShownCard, resetShownSinceFeedback, DARE_DURATION,
+  recordShownCard, resetShownSinceFeedback, resetSession, DARE_DURATION,
 } = session
 
 const showFeedback = ref(false)
@@ -183,7 +183,7 @@ function handleCompleteDare() {
 
       <!-- ── SELESAI ── -->
       <div v-if="sessionFinished" class="finished-wrap">
-        <SessionFinished @pick-theme="router.push('/themes')" @replay="router.go(0)" />
+        <SessionFinished @pick-theme="router.push('/themes')" @replay="() => { resetSession(); router.go(0) }" />
       </div>
 
       <!-- ── KARTU AKTIF ── -->

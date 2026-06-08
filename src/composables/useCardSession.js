@@ -155,6 +155,10 @@ export function useCardSession(themeId, mood, cards) {
     nextCard()
   }
 
+  function resetSession() {
+    clearState(key)
+  }
+
   return {
     currentCard,
     progress,
@@ -170,6 +174,7 @@ export function useCardSession(themeId, mood, cards) {
     nextCard,
     recordShownCard,
     resetShownSinceFeedback,
+    resetSession,
     DARE_DURATION,
   }
 }
