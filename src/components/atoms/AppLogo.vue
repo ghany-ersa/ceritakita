@@ -1,8 +1,15 @@
 <template>
-  <span class="app-logo" :class="`app-logo--${size}`">CeritaKita</span>
+  <img
+    :src="logoSrc"
+    alt="CeritaKita"
+    class="app-logo"
+    :class="`app-logo--${size}`"
+  />
 </template>
 
 <script setup>
+import logoSrc from '@/assets/logo.png'
+
 defineProps({
   size: { type: String, default: 'md' }, // sm | md | lg
 })
@@ -10,14 +17,13 @@ defineProps({
 
 <style scoped>
 .app-logo {
-  font-family: var(--font-headline);
-  font-weight: 700;
-  color: var(--primary);
-  line-height: 1;
-  white-space: nowrap;
+  display: block;
+  object-fit: contain;
+  height: auto;
+  drop-shadow: drop-shadow(0 2px 8px rgba(0,0,0,0.08));
 }
 
-.app-logo--sm  { font-size: 1rem; }
-.app-logo--md  { font-size: 1.1rem; }
-.app-logo--lg  { font-size: clamp(2.5rem, 10vw, 3.5rem); letter-spacing: -0.5px; }
+.app-logo--sm  { width: 120px; }
+.app-logo--md  { width: 180px; }
+.app-logo--lg  { width: min(320px, 80vw); }
 </style>

@@ -18,7 +18,7 @@ const router = useRouter()
         </div>
 
         <div class="tagline-area">
-          <p class="tagline">Cerita kita, lebih dalam.</p>
+          <p class="tagline">Percakapan yang selama ini kalian tunda.</p>
         </div>
 
         <div class="cta-area">
@@ -29,7 +29,7 @@ const router = useRouter()
 
         <div class="hint-area">
           <span class="material-symbols-outlined hint-icon" style="font-variation-settings:'FILL' 0;">favorite</span>
-          <span class="hint-text">Ruang aman untuk berdua</span>
+          <span class="hint-text">Ruang aman untuk Cerita Kita</span>
         </div>
       </div>
     </main>
@@ -74,7 +74,6 @@ const router = useRouter()
 }
 
 .tagline-area {
-  max-width: 80%;
   margin: 0 auto 48px;
 }
 .tagline {
