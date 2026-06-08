@@ -18,7 +18,7 @@ const router = useRouter()
         </div>
 
         <div class="tagline-area">
-          <p class="tagline">Percakapan yang selama ini kalian tunda.</p>
+          <p class="tagline">ketika ceritamu dan ceritaku<br>menjadi cerita kita.</p>
         </div>
 
         <div class="cta-area">
