@@ -8,7 +8,7 @@ import ThemeGrid from '../components/organisms/ThemeGrid.vue'
 import GrainTexture from '../components/atoms/GrainTexture.vue'
 
 const router = useRouter()
-const { hasAccess, hasUnlockAll } = usePurchase()
+const { hasAccess, hasUnlockAll, isTrialAccess } = usePurchase()
 
 function selectTheme(theme) {
   if (hasAccess(theme.id, theme.isFree)) {
@@ -58,7 +58,7 @@ function selectMix() {
           <span v-if="!hasUnlockAll" class="mix-btn__badge">Premium</span>
         </button>
 
-        <ThemeGrid :themes="themes" :has-access="hasAccess" @select="selectTheme" />
+        <ThemeGrid :themes="themes" :has-access="hasAccess" :is-trial-access="isTrialAccess" @select="selectTheme" />
 
       </div>
     </main>

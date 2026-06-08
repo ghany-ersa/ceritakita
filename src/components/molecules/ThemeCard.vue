@@ -13,7 +13,8 @@
           :style="{ color: iconColor, fontVariationSettings: `'FILL' 1` }"
         >{{ icon }}</span>
       </div>
-      <BaseBadge v-if="isFree" variant="primary">Gratis</BaseBadge>
+      <BaseBadge v-if="isTrial" variant="trial">Trial</BaseBadge>
+      <BaseBadge v-else-if="isFree" variant="primary">Gratis</BaseBadge>
     </div>
 
     <div class="theme-card__body">
@@ -41,6 +42,7 @@ defineProps({
   cardCount: { type: Number, required: true },
   isFree:    { type: Boolean, default: false },
   locked:    { type: Boolean, default: false },
+  isTrial:   { type: Boolean, default: false },
 })
 
 defineEmits(['select'])

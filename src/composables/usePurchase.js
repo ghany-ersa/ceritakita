@@ -34,5 +34,12 @@ export function usePurchase() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(purchases.value))
   }
 
-  return { hasAccess, hasUnlockAll, unlockTheme, unlockAll }
+  // true jika akses diberikan hanya karena env testing, bukan karena sudah bayar
+  function isTrialAccess(themeId, isFree) {
+    if (isFree) return false
+    if (!TESTING_UNLOCK) return false
+    return purchases.value['unlock_all'] !== true && purchases.value[themeId] !== true
+  }
+
+  return { hasAccess, hasUnlockAll, isTrialAccess, unlockTheme, unlockAll, TESTING_UNLOCK }
 }

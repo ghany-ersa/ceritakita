@@ -10,6 +10,7 @@
       :card-count="theme.cards.length"
       :is-free="theme.isFree"
       :locked="!hasAccess(theme.id, theme.isFree)"
+      :is-trial="isTrialAccess(theme.id, theme.isFree)"
       @select="$emit('select', theme)"
     />
   </div>
@@ -19,8 +20,9 @@
 import ThemeCard from '../molecules/ThemeCard.vue'
 
 defineProps({
-  themes:    { type: Array, required: true },
-  hasAccess: { type: Function, required: true },
+  themes:          { type: Array,    required: true },
+  hasAccess:       { type: Function, required: true },
+  isTrialAccess:   { type: Function, required: true },
 })
 
 defineEmits(['select'])

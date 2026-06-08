@@ -188,6 +188,7 @@ function handleCompleteDare() {
                 :key="cardKey"
                 :question="currentCard?.question"
                 :label="currentCard?.themeName ?? theme?.name ?? ''"
+
                 :card-style="cardStyle"
                 :is-dragging="isDragging"
                 :is-flying="isFlying"

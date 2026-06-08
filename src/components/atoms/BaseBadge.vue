@@ -39,4 +39,10 @@ defineProps({
   background: var(--surface-container-high);
   color: var(--on-surface-variant);
 }
+
+.base-badge--trial {
+  background: rgba(245, 166, 35, 0.12);
+  color: #7a5c00;
+  border: 1px solid rgba(245, 166, 35, 0.35);
+}
 </style>

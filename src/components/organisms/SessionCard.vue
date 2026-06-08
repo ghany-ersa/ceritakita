@@ -147,6 +147,7 @@ defineEmits(['pointerdown', 'pointermove', 'pointerup'])
   color: var(--secondary);
 }
 
+
 .session-card__body {
   flex: 1;
   display: flex;
