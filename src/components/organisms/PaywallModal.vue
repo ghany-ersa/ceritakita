@@ -35,7 +35,7 @@
             <h2 class="modal-heading__title">Buka Semua Tema</h2>
             <p class="modal-heading__subtitle">Akses semua tema sekarang dan tema baru yang akan datang</p>
             <div class="price-box">
-              <span class="price-box__main">Rp59.000</span>
+              <span class="price-box__main price-box__main--blur">Rp59.000</span>
               <span class="price-box__sub">one-time purchase</span>
             </div>
           </div>
@@ -207,6 +207,11 @@ defineEmits(['close', 'purchase'])
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--primary);
+}
+
+.price-box__main--blur {
+  filter: blur(6px);
+  user-select: none;
 }
 
 .price-box__sub {
